@@ -1,5 +1,5 @@
 Abstract:
-The IKNetworkActivityManager class simplifies work with UIApplication network activity indicator. It turns your networkActivityIndicatorVisible = YES/NO code to add/removeNetworkUser:, so you don't need to remember about objects that can use network anymore.
+The IKNetworkActivityManager class simplifies work with UIApplication network activity indicator. It turns your networkActivityIndicatorVisible = YES/NO code to add/removeNetworkUser:, so you don't need to remember objects that can use network anymore.
 See Demo App to get the idea.
 I used http://github.com/Kentzo/IKConnectionDelegate code in the demo app.
 
