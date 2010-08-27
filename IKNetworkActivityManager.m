@@ -23,40 +23,48 @@ CFStringRef _NetworkUserDescription(const void *value) {
 - (IKNetworkActivityManager *)initWithCapacity:(CFIndex)capacity {
     if (self = [super init]) {
         CFSetCallBacks callbacks = {0, NULL, NULL, _NetworkUserDescription, NULL, NULL};
-        _networkUsers = CFSetCreateMutable(kCFAllocatorDefault, capacity, &callbacks);
+        networkUsers = CFSetCreateMutable(kCFAllocatorDefault, capacity, &callbacks);
+	lock = [NSCondition new];
     }
     return self;
 }
 
 
 - (void)dealloc {
-    CFRelease(_networkUsers);
+    CFRelease(networkUsers);
+    [lock release];
     [super dealloc];
 }
 
 
 - (void)addNetworkUser:(id)aUser {
-    CFSetAddValue(_networkUsers, aUser);
+    [lock lock];
+    CFSetAddValue(networkUsers, aUser);
     [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
+    [lock unlock];
 }
 
 
 - (void)removeNetworkUser:(id)aUser {
-    CFSetRemoveValue(_networkUsers, aUser);
-    [UIApplication sharedApplication].networkActivityIndicatorVisible = (CFSetGetCount(_networkUsers) > 0);
+    [lock lock];
+    CFSetRemoveValue(networkUsers, aUser);
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = (CFSetGetCount(networkUsers) > 0);
+    [lock unlock];
 }
 
 
 - (void)removeAllNetworkUsers {
-    CFSetRemoveAllValues(_networkUsers);
+    [lock lock];
+    CFSetRemoveAllValues(networkUsers);
     [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+    [lock unlock];
 }
 
 @end
 
 
 
-static IKNetworkActivityManager *_instance;
+static IKNetworkActivityManager *_instance = nil;
 
 @implementation IKNetworkActivityManager (Singleton)
 
@@ -66,10 +74,6 @@ static IKNetworkActivityManager *_instance;
         if (_instance == nil) {
 			
             _instance = [[super allocWithZone:NULL] init];
-            
-            // Allocate/initialize any member variables of the singleton class her
-            // example
-			//_instance.member = @"";
         }
     }
     return _instance;

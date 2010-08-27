@@ -9,8 +9,8 @@
 
 
 @interface IKNetworkActivityManager : NSObject {
-@private
-    CFMutableSetRef _networkUsers;
+    CFMutableSetRef networkUsers;
+    NSCondition *lock;
 }
 
 - (IKNetworkActivityManager *)initWithCapacity:(CFIndex)capacity;
