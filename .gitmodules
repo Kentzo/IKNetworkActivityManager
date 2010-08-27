@@ -1,0 +1,3 @@
+[submodule "IKConnectionDelegate"]
+	path = IKConnectionDelegate
+	url = git://github.com/Kentzo/IKConnectionDelegate.git
