@@ -10,10 +10,9 @@
 
 @interface IKNetworkActivityManager : NSObject {
     CFMutableSetRef networkUsers;
-    NSCondition *lock;
 }
 
-- (IKNetworkActivityManager *)initWithCapacity:(CFIndex)capacity;
+- (IKNetworkActivityManager *)initWithCapacity:(NSInteger)capacity;
 
 - (void)addNetworkUser:(id)aUser;
 

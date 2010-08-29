@@ -12,7 +12,6 @@ CFStringRef _NetworkUserDescription(const void *value) {
     return (CFStringRef)NSStringFromClass([(id)value class]);
 }
 
-
 @implementation IKNetworkActivityManager
 
 - (IKNetworkActivityManager *)init {
@@ -20,11 +19,10 @@ CFStringRef _NetworkUserDescription(const void *value) {
 }
 
 
-- (IKNetworkActivityManager *)initWithCapacity:(CFIndex)capacity {
+- (IKNetworkActivityManager *)initWithCapacity:(NSInteger)capacity {
     if (self = [super init]) {
         CFSetCallBacks callbacks = {0, NULL, NULL, _NetworkUserDescription, NULL, NULL};
         networkUsers = CFSetCreateMutable(kCFAllocatorDefault, capacity, &callbacks);
-	lock = [NSCondition new];
     }
     return self;
 }
@@ -32,36 +30,34 @@ CFStringRef _NetworkUserDescription(const void *value) {
 
 - (void)dealloc {
     CFRelease(networkUsers);
-    [lock release];
     [super dealloc];
 }
 
 
 - (void)addNetworkUser:(id)aUser {
-    [lock lock];
-    CFSetAddValue(networkUsers, aUser);
-    [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
-    [lock unlock];
+    @synchronized (self) {
+        CFSetAddValue(networkUsers, aUser);
+        [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
+    }
 }
 
 
 - (void)removeNetworkUser:(id)aUser {
-    [lock lock];
-    CFSetRemoveValue(networkUsers, aUser);
-    [UIApplication sharedApplication].networkActivityIndicatorVisible = (CFSetGetCount(networkUsers) > 0);
-    [lock unlock];
+    @synchronized (self) {
+        CFSetRemoveValue(networkUsers, aUser);
+        [UIApplication sharedApplication].networkActivityIndicatorVisible = (CFSetGetCount(networkUsers) > 0);
+    }
 }
 
 
 - (void)removeAllNetworkUsers {
-    [lock lock];
-    CFSetRemoveAllValues(networkUsers);
-    [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
-    [lock unlock];
+    @synchronized (self) {
+        CFSetRemoveAllValues(networkUsers);
+        [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+    }
 }
 
 @end
-
 
 
 static IKNetworkActivityManager *_instance = nil;
@@ -69,10 +65,8 @@ static IKNetworkActivityManager *_instance = nil;
 @implementation IKNetworkActivityManager (Singleton)
 
 + (IKNetworkActivityManager*)sharedInstance {
-	@synchronized(self) {
-		
+    @synchronized(self) {            
         if (_instance == nil) {
-			
             _instance = [[super allocWithZone:NULL] init];
         }
     }
@@ -83,19 +77,19 @@ static IKNetworkActivityManager *_instance = nil;
 #pragma mark Singleton Methods
 
 + (id)allocWithZone:(NSZone *)zone
-{	
-	return [[self sharedInstance]retain];	
+{       
+    return [[self sharedInstance]retain];       
 }
 
 
 - (id)copyWithZone:(NSZone *)zone
 {
-    return self;	
+    return self;        
 }
 
 - (id)retain
-{	
-    return self;	
+{       
+    return self;        
 }
 
 - (unsigned)retainCount
@@ -110,7 +104,7 @@ static IKNetworkActivityManager *_instance = nil;
 
 - (id)autorelease
 {
-    return self;	
+    return self;        
 }
 
 @end
